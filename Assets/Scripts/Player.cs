@@ -3,12 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
+
+
 
 public class Player : NetworkBehaviour, IKitchenObjectParent {
 
 
     public static event EventHandler OnAnyPlayerSpawned;
     public static event EventHandler OnAnyPickedSomething;
+    public Joystick joystick;
+    public GameObject btnE;
+        public GameObject btnF;
+     public Button buttonEComponent;
+          public Button buttonFComponent;
 
 
     public static void ResetStaticData() {
@@ -47,6 +55,16 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
 
         PlayerData playerData = KitchenGameMultiplayer.Instance.GetPlayerDataFromClientId(OwnerClientId);
         playerVisual.SetPlayerColor(KitchenGameMultiplayer.Instance.GetPlayerColor(playerData.colorId));
+        joystick=GameObject.Find("Fixed Joystick").gameObject.GetComponent<Joystick>();
+        btnE=GameObject.Find("E").gameObject;
+        btnF=GameObject.Find("F").gameObject;
+         buttonEComponent = btnE.GetComponent<Button>();
+          buttonEComponent.onClick.AddListener(OnBtnEClicked);
+
+            buttonFComponent = btnF.GetComponent<Button>();
+          buttonFComponent.onClick.AddListener(OnBtnFClicked);
+        Debug.Log(joystick!=null?"Tồn tại":"Ko có");
+
     }
 
     public override void OnNetworkSpawn() {
@@ -70,14 +88,34 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
     }
 
     private void GameInput_OnInteractAlternateAction(object sender, EventArgs e) {
+                Debug.Log("Nút đc F nhấn click");
+
         if (!KitchenGameManager.Instance.IsGamePlaying()) return;
+        
 
         if (selectedCounter != null) {
             selectedCounter.InteractAlternate(this);
         }
     }
+      private void OnBtnEClicked() {
+        Debug.Log("Nút đc E nhấn");
+      
 
+        if (selectedCounter != null) {
+            selectedCounter.Interact(this);
+        }
+      }
+      private void OnBtnFClicked() {
+        Debug.Log("Nút đc F nhấn");
+      
+
+        if (selectedCounter != null) {
+            selectedCounter.InteractAlternate(this);
+        }
+      }
     private void GameInput_OnInteractAction(object sender, System.EventArgs e) {
+                    Debug.Log("Nút đc E nhấn click");
+
         if (!KitchenGameManager.Instance.IsGamePlaying()) return;
 
         if (selectedCounter != null) {
@@ -100,6 +138,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
 
     private void HandleInteractions() {
         Vector2 inputVector = GameInput.Instance.GetMovementVectorNormalized();
+        inputVector=new Vector2(joystick.Horizontal, joystick.Vertical);
 
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
@@ -125,7 +164,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
 
     private void HandleMovement() {
         Vector2 inputVector = GameInput.Instance.GetMovementVectorNormalized();
-
+        inputVector=new Vector2(joystick.Horizontal, joystick.Vertical);
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
         float moveDistance = moveSpeed * Time.deltaTime;
