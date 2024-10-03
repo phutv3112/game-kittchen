@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -15,7 +15,7 @@ public class ContainerCounter : BaseCounter {
 
     public override void Interact(Player player) {
         if (!player.HasKitchenObject()) {
-            // Player is not carrying anything
+            // Player đang không cầm theo vật nào
             KitchenObject.SpawnKitchenObject(kitchenObjectSO, player);
 
             InteractLogicServerRpc();

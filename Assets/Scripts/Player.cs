@@ -125,7 +125,8 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
 
     private void HandleMovement() {
         Vector2 inputVector = GameInput.Instance.GetMovementVectorNormalized();
-
+        
+        // Move direction
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
         float moveDistance = moveSpeed * Time.deltaTime;

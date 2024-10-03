@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,33 +10,33 @@ public class ClearCounter : BaseCounter {
 
     public override void Interact(Player player) {
         if (!HasKitchenObject()) {
-            // There is no KitchenObject here
+            // Không có KitchenObject ở đây
             if (player.HasKitchenObject()) {
-                // Player is carrying something
+                // Người chơi đang mang theo thứ gì đó
                 player.GetKitchenObject().SetKitchenObjectParent(this);
             } else {
-                // Player not carrying anything
+                // Player không mang theo bất kỳ cái gì
             }
         } else {
-            // There is a KitchenObject here
+            // Có KitchenObject ở đây
             if (player.HasKitchenObject()) {
-                // Player is carrying something
+                // Player đang mang thứ gì đó
                 if (player.GetKitchenObject().TryGetPlate(out PlateKitchenObject plateKitchenObject)) {
-                    // Player is holding a Plate
+                    // Player đang cầm đĩa
                     if (plateKitchenObject.TryAddIngredient(GetKitchenObject().GetKitchenObjectSO())) {
                         KitchenObject.DestroyKitchenObject(GetKitchenObject());
                     }
                 } else {
-                    // Player is not carrying Plate but something else
+                    // Player không cầm đĩa nhưng cầm thứ khác
                     if (GetKitchenObject().TryGetPlate(out plateKitchenObject)) {
-                        // Counter is holding a Plate
+                        // Counter đang có đĩa
                         if (plateKitchenObject.TryAddIngredient(player.GetKitchenObject().GetKitchenObjectSO())) {
                             KitchenObject.DestroyKitchenObject(player.GetKitchenObject());
                         }
                     }
                 }
             } else {
-                // Player is not carrying anything
+                // Player đang không cầm bất kỳ cái gì
                 GetKitchenObject().SetKitchenObjectParent(player);
             }
         }

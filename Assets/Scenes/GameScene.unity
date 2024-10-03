@@ -17118,7 +17118,7 @@ MonoBehaviour:
     type: 3}
   countdownToStartTimer:
     m_InternalValue: 3
-  gamePlayingTimerMax: 10
+  gamePlayingTimerMax: 90
 --- !u!4 &2029274087
 Transform:
   m_ObjectHideFlags: 0

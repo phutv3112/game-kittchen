@@ -1,8 +1,9 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
+// Đối tượng như nguyên liệu thực phẩm, dụng cụ, hoặc các vật thể mà người chơi có thể tương tác.
 public class KitchenObject : NetworkBehaviour {
 
 

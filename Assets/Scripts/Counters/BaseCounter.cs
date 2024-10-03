@@ -1,59 +1,79 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class BaseCounter : NetworkBehaviour, IKitchenObjectParent {
+// Có thể chứa các thuộc tính và phương thức chung cho nhiều loại quầy khác nhau.
+public class BaseCounter : NetworkBehaviour, IKitchenObjectParent
+{
 
-
+    // Sự kiện tĩnh (static event) được gọi khi bất kỳ đối tượng nào được đặt lên quầy
     public static event EventHandler OnAnyObjectPlacedHere;
 
-    public static void ResetStaticData() {
+    // Phương thức đặt lại dữ liệu tĩnh (reset sự kiện) khi cần
+    public static void ResetStaticData()
+    {
         OnAnyObjectPlacedHere = null;
     }
 
-
+    // Khai báo biến chứa điểm trên mặt quầy (được gán từ Unity Editor)
     [SerializeField] private Transform counterTopPoint;
 
-
+    // Biến lưu trữ đối tượng nhà bếp hiện đang ở trên quầy
     private KitchenObject kitchenObject;
 
-
-    public virtual void Interact(Player player) {
-        Debug.LogError("BaseCounter.Interact();");
+    // Phương thức tương tác với người chơi, có thể được ghi đè trong lớp con
+    public virtual void Interact(Player player)
+    {
+        Debug.LogError("BaseCounter.Interact();");  // Ghi lại lỗi để debug
     }
 
-    public virtual void InteractAlternate(Player player) {
+    // Phương thức tương tác thay thế, có thể được ghi đè trong lớp con (hiện không có hành động)
+    public virtual void InteractAlternate(Player player)
+    {
         //Debug.LogError("BaseCounter.InteractAlternate();");
     }
 
-
-    public Transform GetKitchenObjectFollowTransform() {
+    // Lấy vị trí trên quầy (Transform) để theo dõi đối tượng nhà bếp
+    public Transform GetKitchenObjectFollowTransform()
+    {
         return counterTopPoint;
     }
 
-    public void SetKitchenObject(KitchenObject kitchenObject) {
+    // Đặt đối tượng nhà bếp lên quầy, đồng thời kích hoạt sự kiện nếu có đối tượng được đặt
+    public void SetKitchenObject(KitchenObject kitchenObject)
+    {
         this.kitchenObject = kitchenObject;
 
-        if (kitchenObject != null) {
+        // Nếu đối tượng không null, kích hoạt sự kiện thông báo
+        if (kitchenObject != null)
+        {
             OnAnyObjectPlacedHere?.Invoke(this, EventArgs.Empty);
         }
     }
 
-    public KitchenObject GetKitchenObject() {
+    // Lấy đối tượng nhà bếp hiện tại trên quầy
+    public KitchenObject GetKitchenObject()
+    {
         return kitchenObject;
     }
 
-    public void ClearKitchenObject() {
+    // Xóa đối tượng nhà bếp khỏi quầy (đặt lại thành null)
+    public void ClearKitchenObject()
+    {
         kitchenObject = null;
     }
 
-    public bool HasKitchenObject() {
+    // Kiểm tra xem có đối tượng nhà bếp trên quầy hay không
+    public bool HasKitchenObject()
+    {
         return kitchenObject != null;
     }
 
-    public NetworkObject GetNetworkObject() {
+    // Lấy đối tượng mạng (NetworkObject) để đồng bộ hóa trong môi trường nhiều người chơi
+    public NetworkObject GetNetworkObject()
+    {
         return NetworkObject;
     }
 
