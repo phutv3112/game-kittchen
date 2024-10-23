@@ -262,17 +262,23 @@ public class GameOverUI : MonoBehaviour
             Hide();
         }
     }
-
+    
     private void UpdateUI()
     {
         int successfulRecipes = DeliveryManager.Instance.GetSuccessfulRecipesAmount();
         int highScore = PlayerPrefs.GetInt("HighScore", 0);
-        recipesDeliveredText.text =  successfulRecipes + "";
+        if (successfulRecipes > highScore)
+        {
+            PlayerPrefs.SetInt("HighScore", successfulRecipes);
+            PlayerPrefs.Save();
+            Debug.Log("Kỷ lục mới đã được lưu: " + successfulRecipes);
+        }
+        // In ra console để kiểm tra giá trị
+        Debug.Log($"Updating UI. Successful Recipes: {successfulRecipes}, High Score: {highScore}");
+        recipesDeliveredText.text = successfulRecipes + "";
         highScoreText.text = "High Score: " + highScore;
     }
-
-    private void Show()
-    {
+    private void Show() {
         gameObject.SetActive(true);
         joystick.SetActive(false);
         gamePauseUIx.SetActive(false);

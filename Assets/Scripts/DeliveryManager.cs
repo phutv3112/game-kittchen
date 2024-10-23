@@ -29,6 +29,7 @@ public class DeliveryManager : NetworkBehaviour
     // Thêm Dictionary để lưu số lượng món ăn hoàn thành của từng người chơi
     // private Dictionary<ulong, int> playerScores;
     private Dictionary<ulong, PlayerScore> playerScores;
+    
     private void Awake()
     {
         Instance = this;
@@ -191,12 +192,34 @@ public class DeliveryManager : NetworkBehaviour
             string playerName = KitchenGameMultiplayer.Instance.GetPlayerNameFromClientId(playerId);
             playerScores[playerId] = new PlayerScore(playerId,playerName, 0);
         }
+        // Lấy đối tượng PlayerScore ra, cập nhật và gán lại vào từ điển
+        PlayerScore playerScore = playerScores[playerId];
+        playerScore.score++;  // Tăng điểm số
+        playerScores[playerId] = playerScore;  // Gán lại vào từ điển
 
-        playerScores[playerId].score++;
         waitingRecipeSOList.RemoveAt(waitingRecipeSOListIndex);
-        DeliverCorrectRecipeClientRpc(playerId);
-    }
+        successfulRecipesAmount++; // Tăng số lượng món ăn hoàn thành
 
+        // In ra console để kiểm tra
+        Debug.Log($"Successful Recipes: {successfulRecipesAmount}");
+        DeliverCorrectRecipeClientRpc(playerId);
+        // Gửi dữ liệu điểm số cập nhật tới các máy khách
+        UpdateLeaderboardClientRpc(new List<PlayerScore>(playerScores.Values).ToArray());
+
+    }
+    [ClientRpc]
+    private void UpdateLeaderboardClientRpc(PlayerScore[] updatedScores)
+    {
+        // Xử lý cập nhật điểm số trên máy khách
+        playerScores.Clear();
+        foreach (var score in updatedScores)
+        {
+            playerScores[score.playerId] = score;
+        }
+
+        // Cập nhật UI nếu cần thiết
+        OnRecipeCompleted?.Invoke(this, EventArgs.Empty);
+    }
     // [ClientRpc]
 
     // private void DeliverCorrectRecipeClientRpc(int waitingRecipeSOListIndex)
@@ -267,16 +290,21 @@ public class DeliveryManager : NetworkBehaviour
 
     public int GetSuccessfulRecipesAmount()
     {
+        Debug.Log($"GetSuccessfulRecipesAmount called. Current value: {successfulRecipesAmount}");
         return successfulRecipesAmount;
     }
+    // public List<PlayerScore> GetPlayerScores()
+    // {
+    //     List<PlayerScore> scoresList = new List<PlayerScore>();
+    //     foreach (var score in playerScores.Values)
+    //     {
+    //         scoresList.Add(score);
+    //     }
+    //     return scoresList;
+    // }
     public List<PlayerScore> GetPlayerScores()
     {
-        List<PlayerScore> scoresList = new List<PlayerScore>();
-        foreach (var score in playerScores.Values)
-        {
-            scoresList.Add(score);
-        }
-        return scoresList;
+        return new List<PlayerScore>(playerScores.Values);
     }
 
 }
