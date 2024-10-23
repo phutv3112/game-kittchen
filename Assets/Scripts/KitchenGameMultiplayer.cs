@@ -16,8 +16,8 @@ public class KitchenGameMultiplayer : NetworkBehaviour {
     public static KitchenGameMultiplayer Instance { get; private set; }
 
 
-    public static bool playMultiplayer = true;
-
+    // public static bool playMultiplayer = true;
+    public static bool playMultiplayer = false;
 
     public event EventHandler OnTryingToJoinGame;
     public event EventHandler OnFailedToJoinGame;
@@ -227,19 +227,59 @@ public class KitchenGameMultiplayer : NetworkBehaviour {
         return -1;
     }
 
-    public PlayerData GetPlayerDataFromClientId(ulong clientId) {
-        foreach (PlayerData playerData in playerDataNetworkList) {
-            if (playerData.clientId == clientId) {
-                return playerData;
-            }
-        }
-        return default;
-    }
+    // public PlayerData GetPlayerDataFromClientId(ulong clientId) {
+    //     foreach (PlayerData playerData in playerDataNetworkList) {
+    //         if (playerData.clientId == clientId) {
+    //             return playerData;
+    //         }
+    //     }
+    //     return default;
+    // }
 
     public PlayerData GetPlayerData() {
         return GetPlayerDataFromClientId(NetworkManager.Singleton.LocalClientId);
     }
+    public string GetPlayerNameFromClientId(ulong clientId)
+    {
+        foreach (PlayerData playerData in playerDataNetworkList)
+        {
+            if (playerData.clientId == clientId)
+            {
+                // Chuyển đổi từ FixedString64Bytes sang string
+                return playerData.playerName.ToString();
+            }
+        }
+        return string.Empty; // Nếu không tìm thấy, trả về chuỗi rỗng
+    }
 
+    public PlayerData GetPlayerDataFromClientId(ulong clientId)
+    {
+        foreach (PlayerData playerData in playerDataNetworkList)
+        {
+            if (playerData.clientId == clientId)
+            {
+                // Chuyển đổi từ FixedString64Bytes sang string khi cần thiết
+                PlayerData data = playerData;
+                data.playerName = playerData.playerName.ToString();
+                data.playerId = playerData.playerId.ToString();
+                return data;
+            }
+        }
+        return default;
+    }
+    // Thêm phương thức để lấy danh sách tất cả ID của người chơi
+    public List<ulong> GetAllPlayerIds()
+    {
+        List<ulong> playerIds = new List<ulong>();
+
+        // Duyệt qua danh sách playerDataNetworkList và lấy ID của từng người chơi
+        foreach (PlayerData playerData in playerDataNetworkList)
+        {
+            playerIds.Add(playerData.clientId);
+        }
+
+        return playerIds;
+    }
     public PlayerData GetPlayerDataFromPlayerIndex(int playerIndex) {
         return playerDataNetworkList[playerIndex];
     }

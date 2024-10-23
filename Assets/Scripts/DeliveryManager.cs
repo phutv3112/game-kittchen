@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class DeliveryManager : NetworkBehaviour {
+public class DeliveryManager : NetworkBehaviour
+{
 
 
     public event EventHandler OnRecipeSpawned;
@@ -23,26 +24,33 @@ public class DeliveryManager : NetworkBehaviour {
     private float spawnRecipeTimer = 4f;
     private float spawnRecipeTimerMax = 4f;
     private int waitingRecipesMax = 4;
-    public int successfulRecipesAmount;
+    private int successfulRecipesAmount;
 
-
-    private void Awake() {
+    // Thêm Dictionary để lưu số lượng món ăn hoàn thành của từng người chơi
+    // private Dictionary<ulong, int> playerScores;
+    private Dictionary<ulong, PlayerScore> playerScores;
+    private void Awake()
+    {
         Instance = this;
-
-
         waitingRecipeSOList = new List<RecipeSO>();
+        // playerScores = new Dictionary<ulong, int>(); // Khởi tạo bảng xếp hạng
+        playerScores = new Dictionary<ulong, PlayerScore>();
     }
 
-    private void Update() {
-        if (!IsServer) {
+    private void Update()
+    {
+        if (!IsServer)
+        {
             return;
         }
 
         spawnRecipeTimer -= Time.deltaTime;
-        if (spawnRecipeTimer <= 0f) {
+        if (spawnRecipeTimer <= 0f)
+        {
             spawnRecipeTimer = spawnRecipeTimerMax;
 
-            if (KitchenGameManager.Instance.IsGamePlaying() && waitingRecipeSOList.Count < waitingRecipesMax) {
+            if (KitchenGameManager.Instance.IsGamePlaying() && waitingRecipeSOList.Count < waitingRecipesMax)
+            {
                 int waitingRecipeSOIndex = UnityEngine.Random.Range(0, recipeListSO.recipeSOList.Count);
 
                 SpawnNewWaitingRecipeClientRpc(waitingRecipeSOIndex);
@@ -51,7 +59,8 @@ public class DeliveryManager : NetworkBehaviour {
     }
 
     [ClientRpc]
-    private void SpawnNewWaitingRecipeClientRpc(int waitingRecipeSOIndex) {
+    private void SpawnNewWaitingRecipeClientRpc(int waitingRecipeSOIndex)
+    {
         RecipeSO waitingRecipeSO = recipeListSO.recipeSOList[waitingRecipeSOIndex];
 
         waitingRecipeSOList.Add(waitingRecipeSO);
@@ -59,80 +68,215 @@ public class DeliveryManager : NetworkBehaviour {
         OnRecipeSpawned?.Invoke(this, EventArgs.Empty);
     }
 
-    public void DeliverRecipe(PlateKitchenObject plateKitchenObject) {
-        for (int i = 0; i < waitingRecipeSOList.Count; i++) {
-            RecipeSO waitingRecipeSO = waitingRecipeSOList[i];
+    // public void DeliverRecipe(PlateKitchenObject plateKitchenObject)
+    // {
+    //     for (int i = 0; i < waitingRecipeSOList.Count; i++)
+    //     {
+    //         RecipeSO waitingRecipeSO = waitingRecipeSOList[i];
 
-            if (waitingRecipeSO.kitchenObjectSOList.Count == plateKitchenObject.GetKitchenObjectSOList().Count) {
-                // Has the same number of ingredients
+    //         if (waitingRecipeSO.kitchenObjectSOList.Count == plateKitchenObject.GetKitchenObjectSOList().Count)
+    //         {
+    //             // Has the same number of ingredients
+    //             bool plateContentsMatchesRecipe = true;
+    //             foreach (KitchenObjectSO recipeKitchenObjectSO in waitingRecipeSO.kitchenObjectSOList)
+    //             {
+    //                 // Cycling through all ingredients in the Recipe
+    //                 bool ingredientFound = false;
+    //                 foreach (KitchenObjectSO plateKitchenObjectSO in plateKitchenObject.GetKitchenObjectSOList())
+    //                 {
+    //                     // Cycling through all ingredients in the Plate
+    //                     if (plateKitchenObjectSO == recipeKitchenObjectSO)
+    //                     {
+    //                         // Ingredient matches!
+    //                         ingredientFound = true;
+    //                         break;
+    //                     }
+    //                 }
+    //                 if (!ingredientFound)
+    //                 {
+    //                     // This Recipe ingredient was not found on the Plate
+    //                     plateContentsMatchesRecipe = false;
+    //                 }
+    //             }
+
+    //             if (plateContentsMatchesRecipe)
+    //             {
+    //                 // Player delivered the correct recipe!
+    //                 DeliverCorrectRecipeServerRpc(i);
+    //                 return;
+    //             }
+    //         }
+    //     }
+
+    //     // No matches found!
+    //     // Player did not deliver a correct recipe
+    //     DeliverIncorrectRecipeServerRpc();
+    // }
+    public void DeliverRecipe(ulong playerId, PlateKitchenObject plateKitchenObject)
+    {
+        for (int i = 0; i < waitingRecipeSOList.Count; i++)
+        {
+            RecipeSO waitingRecipeSO = waitingRecipeSOList[i];
+            if (waitingRecipeSO.kitchenObjectSOList.Count == plateKitchenObject.GetKitchenObjectSOList().Count)
+            {
                 bool plateContentsMatchesRecipe = true;
-                foreach (KitchenObjectSO recipeKitchenObjectSO in waitingRecipeSO.kitchenObjectSOList) {
-                    // Cycling through all ingredients in the Recipe
+                foreach (KitchenObjectSO recipeKitchenObjectSO in waitingRecipeSO.kitchenObjectSOList)
+                {
                     bool ingredientFound = false;
-                    foreach (KitchenObjectSO plateKitchenObjectSO in plateKitchenObject.GetKitchenObjectSOList()) {
-                        // Cycling through all ingredients in the Plate
-                        if (plateKitchenObjectSO == recipeKitchenObjectSO) {
-                            // Ingredient matches!
+                    foreach (KitchenObjectSO plateKitchenObjectSO in plateKitchenObject.GetKitchenObjectSOList())
+                    {
+                        if (plateKitchenObjectSO == recipeKitchenObjectSO)
+                        {
                             ingredientFound = true;
                             break;
                         }
                     }
-                    if (!ingredientFound) {
-                        // This Recipe ingredient was not found on the Plate
+                    if (!ingredientFound)
+                    {
                         plateContentsMatchesRecipe = false;
                     }
                 }
 
-                if (plateContentsMatchesRecipe) {
-                    // Player delivered the correct recipe!
-                    DeliverCorrectRecipeServerRpc(i);
+                if (plateContentsMatchesRecipe)
+                {
+                    DeliverCorrectRecipeServerRpc(playerId, i);
                     return;
                 }
             }
         }
 
-        // No matches found!
-        // Player did not deliver a correct recipe
         DeliverIncorrectRecipeServerRpc();
     }
-
     [ServerRpc(RequireOwnership = false)]
-    private void DeliverIncorrectRecipeServerRpc() {
+    private void DeliverIncorrectRecipeServerRpc()
+    {
         DeliverIncorrectRecipeClientRpc();
     }
 
+   
     [ClientRpc]
-    private void DeliverIncorrectRecipeClientRpc() {
+    private void DeliverIncorrectRecipeClientRpc()
+    {
         OnRecipeFailed?.Invoke(this, EventArgs.Empty);
     }
 
+    // [ServerRpc(RequireOwnership = false)]
+    // private void DeliverCorrectRecipeServerRpc(int waitingRecipeSOListIndex)
+    // {
+    //     DeliverCorrectRecipeClientRpc(waitingRecipeSOListIndex);
+    // }
     [ServerRpc(RequireOwnership = false)]
-    private void DeliverCorrectRecipeServerRpc(int waitingRecipeSOListIndex) {
-        DeliverCorrectRecipeClientRpc(waitingRecipeSOListIndex);
+    // private void DeliverCorrectRecipeServerRpc(ulong playerId, int waitingRecipeSOListIndex)
+    // {
+    //     // Đảm bảo rằng ID người chơi hợp lệ
+    //     if (!playerScores.ContainsKey(playerId))
+    //     {
+    //         playerScores[playerId] = 0;
+    //     }
+
+    //     // Tăng điểm số của người chơi trên server
+    //     playerScores[playerId]++;
+
+    //     // Xóa món ăn từ danh sách
+    //     waitingRecipeSOList.RemoveAt(waitingRecipeSOListIndex);
+
+    //     // Gửi cập nhật đến tất cả client
+    //     DeliverCorrectRecipeClientRpc(playerId);
+    // }
+    private void DeliverCorrectRecipeServerRpc(ulong playerId, int waitingRecipeSOListIndex)
+    {
+        if (!playerScores.ContainsKey(playerId))
+        {
+            // Sử dụng phương thức ToString() để chuyển đổi playerName sang string
+            string playerName = KitchenGameMultiplayer.Instance.GetPlayerNameFromClientId(playerId);
+            playerScores[playerId] = new PlayerScore(playerId,playerName, 0);
+        }
+
+        playerScores[playerId].score++;
+        waitingRecipeSOList.RemoveAt(waitingRecipeSOListIndex);
+        DeliverCorrectRecipeClientRpc(playerId);
     }
 
+    // [ClientRpc]
+
+    // private void DeliverCorrectRecipeClientRpc(int waitingRecipeSOListIndex)
+    // {
+    //     successfulRecipesAmount++;
+
+    //     waitingRecipeSOList.RemoveAt(waitingRecipeSOListIndex);
+
+    //     // Kiểm tra và lưu kỷ lục mới
+    //     int highScore = PlayerPrefs.GetInt("HighScore", 0);
+    //     if (successfulRecipesAmount > highScore)
+    //     {
+    //         PlayerPrefs.SetInt("HighScore", successfulRecipesAmount);
+    //         PlayerPrefs.Save();
+    //         Debug.Log("Kỷ lục mới đã được lưu: " + successfulRecipesAmount);
+
+    //     }
+
+    //     OnRecipeCompleted?.Invoke(this, EventArgs.Empty);
+    //     OnRecipeSuccess?.Invoke(this, EventArgs.Empty);
+    // }
     [ClientRpc]
-    private void DeliverCorrectRecipeClientRpc(int waitingRecipeSOListIndex) {
-        successfulRecipesAmount++;
-
-        waitingRecipeSOList.RemoveAt(waitingRecipeSOListIndex);
-
+    private void DeliverCorrectRecipeClientRpc(ulong playerId)
+    {
+        
         OnRecipeCompleted?.Invoke(this, EventArgs.Empty);
         OnRecipeSuccess?.Invoke(this, EventArgs.Empty);
     }
+    private void SaveHighScore()
+    {
+        if (!KitchenGameMultiplayer.playMultiplayer)
+        {
+            int highScore = PlayerPrefs.GetInt("HighScore", 0);
+            if (successfulRecipesAmount > highScore)
+            {
+                PlayerPrefs.SetInt("HighScore", successfulRecipesAmount);
+                PlayerPrefs.Save();
+                Debug.Log("Kỷ lục mới đã được lưu: " + successfulRecipesAmount);
+            }
+        }
+    }
+    // Thêm phương thức để lấy bảng xếp hạng
+    // public Dictionary<ulong, int> GetPlayerScores()
+    // {
+    //     return playerScores;
+    // }
+    // Cập nhật phương thức để đảm bảo tất cả người chơi được thêm vào
+    // public Dictionary<ulong, int> GetPlayerScores()
+    // {
+    //     // Lấy danh sách tất cả ID của người chơi từ KitchenGameManager
+    //     List<ulong> allPlayerIds = KitchenGameManager.Instance.GetAllPlayerIds();
 
+    //     // Đảm bảo tất cả người chơi đều có trong bảng xếp hạng
+    //     foreach (var playerId in allPlayerIds)
+    //     {
+    //         if (!playerScores.ContainsKey(playerId))
+    //         {
+    //             playerScores[playerId] = 0; // Đặt điểm là 0 nếu chưa có trong bảng xếp hạng
+    //         }
+    //     }
 
-    public List<RecipeSO> GetWaitingRecipeSOList() {
+    //     return playerScores;
+    // }
+    public List<RecipeSO> GetWaitingRecipeSOList()
+    {
         return waitingRecipeSOList;
     }
 
-    public void SaveHightScore()
+    public int GetSuccessfulRecipesAmount()
     {
-        DataManager.Instance.SaveHighScore(successfulRecipesAmount);
-    }
-
-    public int GetSuccessfulRecipesAmount() {
         return successfulRecipesAmount;
+    }
+    public List<PlayerScore> GetPlayerScores()
+    {
+        List<PlayerScore> scoresList = new List<PlayerScore>();
+        foreach (var score in playerScores.Values)
+        {
+            scoresList.Add(score);
+        }
+        return scoresList;
     }
 
 }

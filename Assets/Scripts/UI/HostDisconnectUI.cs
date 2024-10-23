@@ -10,15 +10,34 @@ public class HostDisconnectUI : MonoBehaviour {
     [SerializeField] private Button playAgainButton;
 
 
-    private void Awake() {
-        playAgainButton.onClick.AddListener(() => {
-            Loader.Load(Loader.Scene.MainMenuScene);
-        });
+    // private void Awake() {
+    //     playAgainButton.onClick.AddListener(() => {
+    //         Loader.Load(Loader.Scene.MainMenuScene);
+    //     });
+    // }
+    private void Awake()
+    {
+        // Đảm bảo playAgainButton không null trước khi thêm sự kiện
+        if (playAgainButton != null)
+        {
+            playAgainButton.onClick.AddListener(() =>
+            {
+                Loader.Load(Loader.Scene.MainMenuScene);
+            });
+        }
     }
+    // private void Start() {
+    //     NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
 
-    private void Start() {
-        NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
-
+    //     Hide();
+    // }
+    private void Start()
+    {
+        // Kiểm tra null cho NetworkManager trước khi đăng ký sự kiện
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+        }
         Hide();
     }
 
@@ -29,12 +48,29 @@ public class HostDisconnectUI : MonoBehaviour {
         }
     }
 
-    private void Show() {
-        gameObject.SetActive(true);
+    // 
+    private void Show()
+    {
+        if (this != null)
+        {
+            gameObject.SetActive(true);
+        }
     }
 
-    private void Hide() {
-        gameObject.SetActive(false);
+    private void Hide()
+    {
+        if (this != null)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+    private void OnDestroy()
+    {
+        // Gỡ bỏ đăng ký sự kiện khi đối tượng bị hủy
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientDisconnectCallback -= NetworkManager_OnClientDisconnectCallback;
+        }
     }
 
 }

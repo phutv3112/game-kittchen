@@ -1,18 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+// using System.Collections;
+// using System.Collections.Generic;
+// using UnityEngine;
+// using UnityEngine.UI;
 
-public class MainMenuExtrasUI : MonoBehaviour {
-
-
-    [SerializeField] private Button youTubeButton;
+// public class MainMenuExtrasUI : MonoBehaviour {
 
 
-    private void Awake() {
-        youTubeButton.onClick.AddListener(() => {
-            Application.OpenURL("https://www.youtube.com/watch?v=AmGSEH7QcDg");
-        });
-    }
+//     [SerializeField] private Button youTubeButton;
 
-}
+
+//     private void Awake() {
+//         youTubeButton.onClick.AddListener(() => {
+//             Application.OpenURL("https://www.youtube.com/watch?v=AmGSEH7QcDg");
+//         });
+//     }
+
+// }
