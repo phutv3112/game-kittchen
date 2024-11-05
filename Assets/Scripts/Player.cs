@@ -160,7 +160,13 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
     private void HandleMovement() {
         Vector2 inputVector = GameInput.Instance.GetMovementVectorNormalized();
         inputVector = new Vector2(joystick.Horizontal, joystick.Vertical);
-
+        // Kiểm tra nếu joystick không có đầu vào thì giữ hướng di chuyển hiện tại
+        if (inputVector.magnitude < 0.1f)
+        {
+            // Nếu joystick không có đầu vào, thoát khỏi hàm mà không cập nhật hướng di chuyển
+            isWalking = false;
+            return;
+        }
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
         float moveDistance = moveSpeed * Time.deltaTime;
